@@ -10,6 +10,7 @@ class Customer(TimeStampedModel, models.Model):
     name = models.CharField(max_length=180)
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
 
+
     def __str__(self):
         return self.name
 
