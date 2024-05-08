@@ -1,7 +1,10 @@
+import datetime
+
 from django.shortcuts import render
 
 # Create your views here.
 from django.shortcuts import render
+from rest_framework import filters
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -134,7 +137,7 @@ class ClienteDettaglioApiView(APIView):
         try:
             cliente = Cliente.objects.get(id=numero_di_telefono)
             cliente.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response({"res": "Cliente eliminato con successo"}, status=status.HTTP_200_OK)
 
         except Cliente.DoesNotExist:
             return Response(
@@ -146,27 +149,35 @@ class ClienteDettaglioApiView(APIView):
 class InterventoListApiView(APIView):
 
     def get(self, request, *args, **kwargs):
-        """
-        List all the Customer items
-        """
-        objects = Intervento.objects.all()
+        stato = request.query_params.get("stato")
+        if stato:
+            objects = Intervento.objects.filter(stato=stato)
+        else:
+            objects = Intervento.objects.all()
+
         serializer = InterventoSerializer(objects, many=True)
+        data = serializer.data
+        for d in data:
+            _id = d.get("cliente")
+            cliente = Cliente.objects.get(id=_id)
+
+            d.update({"cliente": {
+                "id": d.get("cliente"),
+                "nome": cliente.nome,
+                "cognome": cliente.cognome,
+                "nome_cognome_import": cliente.nome_cognome_import
+            }})
+
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request, *args, **kwargs):
         """
         Create the Customer with given Customer data
         """
-        data = {
-            'data_chiamata': request.data.get('data_chiamata'),
-            'data_completamento': request.data.get('data_completamento'),
-            'data_assegnamento': request.data.get('data_assegnamento'),
-            'motivazione': request.data.get('motivazione'),
-            'note_per_tecnico': request.data.get('note_per_tecnico'),
-            'note_del_tecnico': request.data.get('note_del_tecnico'),
-            'stato': request.data.get('stato'),
-            'cliente': request.data.get('cliente'),
-        }
+        data = request.data
+        if data.get("tecnico"):
+            data.update({"data_assegnamento": datetime.datetime.now().date()})
+            data.update({"stato": 2})
         serializer = InterventoSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
@@ -207,8 +218,11 @@ class InterventoDettaglioApiView(APIView):
                 {"res": "Intervento non trovato"},
                 status=status.HTTP_404_NOT_FOUND
             )
-
-        serializer = InterventoSerializer(obj, data=request.data, partial=True)
+        data = request.data
+        if data.get("tecnico"):
+            data.update({"data_assegnamento": datetime.datetime.now().date()})
+            data.update({"stato": 2})
+        serializer = InterventoSerializer(obj, data=data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -222,7 +236,7 @@ class InterventoDettaglioApiView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
         obj.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({"res": "Intervento eliminato con successo"}, status=status.HTTP_200_OK)
 
 
 

@@ -13,9 +13,12 @@ class Customer(TimeStampedModel, models.Model):
 
 
 class Cliente(TimeStampedModel, models.Model):
-    nome_cognome_import = models.CharField(max_length=150)
-    anagrafica_import = models.CharField(max_length=300)
+    nome_cognome_import = models.CharField(max_length=150, null=True)
+    anagrafica_import = models.CharField(max_length=300, null=True)
     telefono_principale = models.CharField(max_length=20, null=True, unique=True)
+    mostra_dati_importati = models.BooleanField(null=False, default=True)
+    creato_da_importazione = models.BooleanField(null=False, default=True)
+    creato_da_webapp = models.BooleanField(null=False, default=False)
 
     # da qui in poi i campi potrebbero essere deprecati
     nome = models.CharField(max_length=50, null=True)
@@ -42,9 +45,9 @@ class Intervento(TimeStampedModel, models.Model):
     data_chiamata = models.DateField(null=False)
     data_completamento = models.DateField(null=True)
     data_assegnamento = models.DateField(null=True)
-    motivazione = models.CharField(max_length=100, null=False)
-    note_per_tecnico = models.CharField(max_length=200, null=False)
-    note_del_tecnico = models.CharField(max_length=200, null=False)
+    motivazione = models.CharField(max_length=100, null=True)
+    note_per_tecnico = models.CharField(max_length=200, null=True)
+    note_del_tecnico = models.CharField(max_length=200, null=True)
     SELEZIONE_STATI = (
         (1, "Nuovo"),
         (2, "Assegnato"),
