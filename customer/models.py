@@ -61,3 +61,22 @@ class NumeroDiTelefonoAggiuntivo(models.Model):
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, blank=True, null=False)
 
     numero = models.CharField(max_length=20, null=True)
+
+
+class Garanzia(models.Model):
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, blank=True, null=False)
+
+    data_accensione = models.DateField(null=True)
+    data_scadenza = models.DateField(null=True)
+    matricola = models.CharField(max_length=100, null=True)
+    note = models.CharField(max_length=200, null=True)
+
+
+class Manutenzione(models.Model):
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, blank=True, null=False)
+
+    data_rapporto = models.DateField(null=True)
+    data_scadenza = models.DateField(null=True)
+    matricola = models.CharField(max_length=100, null=True)
+    tipologia = models.CharField(max_length=100, null=True)
+

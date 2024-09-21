@@ -7,7 +7,11 @@ from .views import (
     InterventoListApiView,
     InterventoDettaglioApiView,
     TecnicoCaldaiaListApiView,
-    NumeroDiTelefonoAggiuntivoListApiView
+    NumeroDiTelefonoAggiuntivoListApiView,
+    ManutenzioneListApiView,
+    ManutenzioneDettaglioApiView,
+    GaranziaListApiView,
+    GaranziaDettaglioApiView
 )
 
 urlpatterns = [
@@ -19,4 +23,8 @@ urlpatterns = [
     path('intervento/<int:_id>', InterventoDettaglioApiView.as_view()),
     path('tecnico', TecnicoCaldaiaListApiView.as_view()),
     path('numeroAggiuntivo', NumeroDiTelefonoAggiuntivoListApiView.as_view()),
+    path('manutenzione', ManutenzioneListApiView.as_view()),
+    path('manutenzione/<int:_id>', ManutenzioneDettaglioApiView.as_view()),
+    path('garanzia', GaranziaListApiView.as_view()),
+    path('garanzia/<int:_id>', GaranziaDettaglioApiView.as_view()),
 ]

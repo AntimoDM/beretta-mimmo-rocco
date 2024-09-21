@@ -4,6 +4,8 @@ from .models import Cliente
 from .models import Intervento
 from .models import TecnicoCaldaia
 from .models import NumeroDiTelefonoAggiuntivo
+from .models import Manutenzione
+from .models import Garanzia
 
 
 class CustomerSerializer(serializers.ModelSerializer):
@@ -33,4 +35,16 @@ class TecnicoCaldaiaSerializer(serializers.ModelSerializer):
 class NumeroDiTelefonoAggiuntivoSerializer(serializers.ModelSerializer):
     class Meta:
         model = NumeroDiTelefonoAggiuntivo
+        fields = '__all__'
+
+
+class ManutenzioneSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Manutenzione
+        fields = '__all__'
+
+
+class GaranziaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Garanzia
         fields = '__all__'
