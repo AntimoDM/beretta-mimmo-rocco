@@ -11,7 +11,9 @@ from .views import (
     ManutenzioneListApiView,
     ManutenzioneDettaglioApiView,
     GaranziaListApiView,
-    GaranziaDettaglioApiView
+    GaranziaDettaglioApiView,
+    GiornataDettaglioApiView,
+    GiornataListApiView
 )
 
 urlpatterns = [
@@ -27,4 +29,6 @@ urlpatterns = [
     path('manutenzione/<int:_id>', ManutenzioneDettaglioApiView.as_view()),
     path('garanzia', GaranziaListApiView.as_view()),
     path('garanzia/<int:_id>', GaranziaDettaglioApiView.as_view()),
+    path('giornata', GiornataListApiView.as_view()),
+    path('giornata/<int:_id>', GiornataDettaglioApiView.as_view()),
 ]

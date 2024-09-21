@@ -9,9 +9,9 @@ from rest_framework import filters
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Customer, Cliente, Intervento, TecnicoCaldaia, NumeroDiTelefonoAggiuntivo, Manutenzione, Garanzia
+from .models import Customer, Cliente, Intervento, TecnicoCaldaia, NumeroDiTelefonoAggiuntivo, Manutenzione, Garanzia, Giornata
 from .serializers import CustomerSerializer, ClienteSerializer, InterventoSerializer, TecnicoCaldaiaSerializer, \
-    NumeroDiTelefonoAggiuntivoSerializer, ManutenzioneSerializer, GaranziaSerializer
+    NumeroDiTelefonoAggiuntivoSerializer, ManutenzioneSerializer, GaranziaSerializer, GiornataSerializer
 
 
 class CustomerListApiView(APIView):
@@ -103,12 +103,19 @@ class ClienteDettaglioApiView(APIView):
             object_instance.numeroditelefonoaggiuntivo_set.all(), many=True)
 
         data.update({"numeri_aggiuntivi": numeri_aggiuntivi_serializer.data})
-        garanzia = Garanzia.objects.get(cliente=data.get("id"))
-        garanzia_serializer = GaranziaSerializer(garanzia, many=False)
-        data.update({"garanzia": garanzia_serializer.data})
-        manutenzione = Manutenzione.objects.get(cliente=data.get("id"))
-        manutenzione_serializer = ManutenzioneSerializer(manutenzione, many=False)
-        data.update({"manutenzione": manutenzione_serializer.data})
+        try:
+            garanzia = Garanzia.objects.get(cliente=data.get("id"))
+            garanzia_serializer = GaranziaSerializer(garanzia, many=False)
+            data.update({"garanzia": garanzia_serializer.data})
+        except Garanzia.DoesNotExist:
+            print("")
+
+        try:
+            manutenzione = Manutenzione.objects.get(cliente=data.get("id"))
+            manutenzione_serializer = ManutenzioneSerializer(manutenzione, many=False)
+            data.update({"manutenzione": manutenzione_serializer.data})
+        except Manutenzione.DoesNotExist:
+            print("")
         return data
 
     def get(self, request, numero_di_telefono, *args, **kwargs):
@@ -496,5 +503,80 @@ class ManutenzioneDettaglioApiView(APIView):
         except Manutenzione.DoesNotExist:
             return Response(
                 {"res": "Manutenzione non trovata"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+class GiornataListApiView(APIView):
+
+    def get(self, request, *args, **kwargs):
+        customers = Giornata.objects.all()
+        serializer = GiornataSerializer(customers, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, *args, **kwargs):
+        serializer = GiornataSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class GiornataDettaglioApiView(APIView):
+
+    def _get_object(self, _id):
+        try:
+            return Giornata.objects.get(id=_id)
+        except Giornata.DoesNotExist:
+            return None
+
+    def _get_response(self, object_instance):
+        serializer = GiornataSerializer(object_instance)
+        data = serializer.data
+        interventi_serializer = InterventoSerializer(object_instance.intervento_set.all(), many=True)
+        data.update({"interventi": interventi_serializer.data})
+        return data
+
+    def get(self, request, _id, *args, **kwargs):
+        cliente = self._get_object(_id)
+        if not cliente:
+            # devo cercare tra i numeri aggiuntivi
+
+            return Response(
+                {"res": "Giornata non trovato"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        data = self._get_response(cliente)
+        return Response(data, status=status.HTTP_200_OK)
+
+    def patch(self, request, _id):
+        cliente = self._get_object(_id)
+
+        if not cliente:
+            return Response(
+                {"res": "Gironata non trovato"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        serializer = GiornataSerializer(cliente, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+        else:
+            return Response("Parametri Errati", status.HTTP_400_BAD_REQUEST)
+
+        data = self._get_response(cliente)
+        return Response(data, status=status.HTTP_200_OK)
+
+    def delete(self, request, numero_di_telefono, format=None):
+        try:
+            cliente = Giornata.objects.get(id=numero_di_telefono)
+            cliente.delete()
+            return Response({"res": "Cliente eliminato con successo"}, status=status.HTTP_200_OK)
+
+        except Giornata.DoesNotExist:
+            return Response(
+                {"res": "Cliente non trovato"},
                 status=status.HTTP_400_BAD_REQUEST
             )

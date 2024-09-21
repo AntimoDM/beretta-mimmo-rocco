@@ -38,8 +38,16 @@ class TecnicoCaldaia(models.Model):
     nome = models.CharField(max_length=50, null=True)
 
 
+class Giornata(models.Model):
+    tecnico = models.ForeignKey(TecnicoCaldaia, on_delete=models.CASCADE, blank=True, null=True)
+    data = models.DateField(null=False)
+    modificabile = models.BooleanField(null=False, default=True)
+
+
+
 class Intervento(TimeStampedModel, models.Model):
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, blank=True, null=False)
+    giornata = models.ForeignKey(Giornata, on_delete=models.CASCADE, blank=True, null=True)
     tecnico = models.ForeignKey(TecnicoCaldaia, on_delete=models.CASCADE, blank=True, null=True)
 
     data_chiamata = models.DateField(null=False)
@@ -79,4 +87,7 @@ class Manutenzione(models.Model):
     data_scadenza = models.DateField(null=True)
     matricola = models.CharField(max_length=100, null=True)
     tipologia = models.CharField(max_length=100, null=True)
+
+
+
 
