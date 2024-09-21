@@ -551,6 +551,8 @@ class GiornataDettaglioApiView(APIView):
         data = self._get_response(cliente)
         return Response(data, status=status.HTTP_200_OK)
 
+
+
     def patch(self, request, _id):
         cliente = self._get_object(_id)
 
@@ -580,3 +582,40 @@ class GiornataDettaglioApiView(APIView):
                 {"res": "Cliente non trovato"},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+class InterventiSuGiornata(APIView):
+
+    def _get_object(self, _id):
+        try:
+            return Giornata.objects.get(id=_id)
+        except Giornata.DoesNotExist:
+            return None
+
+    def _get_response(self, object_instance):
+        serializer = GiornataSerializer(object_instance)
+        data = serializer.data
+        interventi_serializer = InterventoSerializer(object_instance.intervento_set.all(), many=True)
+        data.update({"interventi": interventi_serializer.data})
+        return data
+
+    def post(self, request, _id, *args, **kwargs):
+        cliente = self._get_object(_id)
+        if not cliente:
+            # devo cercare tra i numeri aggiuntivi
+
+            return Response(
+                {"res": "Giornata non trovato"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        data = request.data
+        for _ids in data.get("ids"):
+            try:
+                intervento = Intervento.objects.get(id=_ids)
+                serializer = InterventoSerializer(intervento, data={"giornata" : _id}, partial=True)
+                if serializer.is_valid():
+                    serializer.save()
+            except Intervento.DoesNotExist:
+                pass
+
+        data = self._get_response(cliente)
+        return Response(data, status=status.HTTP_200_OK)
